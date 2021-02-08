@@ -9,6 +9,16 @@ body {
   padding: 0;
 }
 
+div#viz {
+  width: 30vw;
+  height:30vh;  
+}	
+
+div#viz2 {
+  width: 30vw;
+  height:30vh;  
+}	
+
 button {
   margin: 0;
   padding: 0;
