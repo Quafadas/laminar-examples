@@ -4,5 +4,6 @@ target
 .DS_Store
 .vscode
 .metals
+metals.sbt
 # you should probably un-ignore this in your own project
 yarn.lock

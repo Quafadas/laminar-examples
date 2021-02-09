@@ -18,7 +18,26 @@ object WebComponentsPage {
   def apply(): Div = {
     val actionVar = Var("Do the thing")
     val iconVar = Var("<>")
-    val progressVar = Var(0d)    
+    val progressVar = Var(0d)
+    val config = JSON.parse("""{"logLevel": 0}""")
+    val asObj = JSON.parse(spec)    
+    val stream = EventStream.fromJsPromise(VegaEmbed.embed("#viz", asObj,config))
+
+    progressVar.signal --> (s => {    
+      dom.console.log("hi")        
+      val data = JSON.parse(s"""[
+        {"category": "A", "amount": ${s*100}}, 
+        {"category": "B", "amount": ${s*50}}
+      ]""")                    
+      view match {
+        case Some(view) => 
+          view.data("table", data)                                     
+          view.runAsync() 
+        case _ => () // If it doesn't exist, don't update it
+      }       
+    }
+    )
+
     val updateView = progressVar.signal.map(
       s => {                    
             val data = JSON.parse(s"""[
@@ -117,21 +136,13 @@ object WebComponentsPage {
                     
         div(              
           cls := "viz",
-          // This actually does the update by registering a listener to the event streams... which retrun a nothing string but have side effects.
-          title <-- updateView.signal,            
-          onMountCallback{
-            ctx => {
-              val config = JSON.parse("""{"logLevel": 0}""")
-              val asObj = JSON.parse(spec)                                            
-              val promise = VegaEmbed.embed("#viz", asObj, config ).toFuture.map(
-                  viewTemp => {
-                      val temp = viewTemp.view.asInstanceOf[VegaView]
-                      view = Some(temp)
-                      temp.runAsync()
-                  }                          
-                )
-              }
-          }, 
+          title <-- updateView.signal,                      
+          stream --> ( viewTemp =>  {
+              val temp = viewTemp.view.asInstanceOf[VegaView]
+              view = Some(temp)
+              temp.runAsync()              
+            }
+          ),
           idAttr := "viz"
         )                       
       )
