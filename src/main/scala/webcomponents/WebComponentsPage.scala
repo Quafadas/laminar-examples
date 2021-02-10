@@ -11,48 +11,27 @@ import scala.concurrent.Promise
 
 object WebComponentsPage {
 
+  // Better hope this matches the CSS...
+  val vizDivClass = "viz"
+  val randomGen = scala.util.Random
+
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
-  // Bad pracise... but I don't know how to get round this?
-  var view: Option[VegaView] = None
 
   def apply(): Div = {
+    
     val actionVar = Var("Do the thing")
     val iconVar = Var("<>")
-    val progressVar = Var(0d)
+    val progressVar = Var(0.5d)
     val config = JSON.parse("""{"logLevel": 0}""")
-    val asObj = JSON.parse(spec)    
-    val stream = EventStream.fromJsPromise(VegaEmbed.embed("#viz", asObj,config))
+    val asObj = JSON.parse(spec)
+    
+    // This signal comes from a JS Promise... that's nice for third party integration.
+    val stream = EventStream.fromJsPromise(VegaEmbed.embed(s"#$vizDivClass", asObj,config)).toWeakSignal
+    val manageViewObj = stream.map( _.map(_.view.asInstanceOf[VegaView]))
+    val randomVar = progressVar.signal.map( _ => randomGen.nextDouble()+0.5)
 
-    progressVar.signal --> (s => {    
-      dom.console.log("hi")        
-      val data = JSON.parse(s"""[
-        {"category": "A", "amount": ${s*100}}, 
-        {"category": "B", "amount": ${s*50}}
-      ]""")                    
-      view match {
-        case Some(view) => 
-          view.data("table", data)                                     
-          view.runAsync() 
-        case _ => () // If it doesn't exist, don't update it
-      }       
-    }
-    )
-
-    val updateView = progressVar.signal.map(
-      s => {                    
-            val data = JSON.parse(s"""[
-              {"category": "A", "amount": ${s*100}}, 
-              {"category": "B", "amount": ${s*50}}
-            ]""")                    
-            view match {
-              case Some(view) => 
-                view.data("table", data)                                     
-                view.runAsync() 
-              case _ => () // If it doesn't exist, don't update it
-            } 
-            ""
-      }
-    )
+    // This stitches together the three things we would "need" to update the bar. The "data, "view", and a random number...
+    val updateVizStream = progressVar.signal.combineWith(manageViewObj).combineWith(randomVar)
 
     div(
       h1("Web Components"),
@@ -116,7 +95,8 @@ object WebComponentsPage {
           Slider(
             _.pin := true,
             _.min := 0,
-            _.max := 20,
+            _.max := 1,
+            _.value := progressVar.now(),
              _ => onMountCallback(ctx => {
                js.timers.setTimeout(1) {
                  // This component initializes its mdcFoundation asynchronously,
@@ -128,22 +108,29 @@ object WebComponentsPage {
                }
              }),
             slider => inContext { thisNode => {
-                slider.onInput.mapTo(thisNode.ref.value / 20) --> progressVar                
+                slider.onInput.mapTo(thisNode.ref.value) --> progressVar                
               } 
             }
-          )
+          )          
         ), 
-                    
+        p("The below bar chart is linked up to the slider... return the value on the right, and a random stream on the left"),           
         div(              
-          cls := "viz",
-          title <-- updateView.signal,                      
-          stream --> ( viewTemp =>  {
-              val temp = viewTemp.view.asInstanceOf[VegaView]
-              view = Some(temp)
-              temp.runAsync()              
-            }
-          ),
-          idAttr := "viz"
+          cls := vizDivClass,
+          updateVizStream.signal --> ( {case((value, view), random) => {                      
+                  val data = JSON.parse(s"""[
+                    {"category": "A", "amount": ${value*100}}, 
+                    {"category": "B", "amount": ${value*50*random}}
+                  ]""")
+                  view match {
+                    case Some(view) => 
+                      view.data("table", data)                                     
+                      view.runAsync() 
+                    case _ => ()
+                  }       
+                }
+              }
+            ),          
+          idAttr := vizDivClass
         )                       
       )
     )
@@ -173,6 +160,13 @@ object WebComponentsPage {
               "events": "window:resize"
             }
           ]
+        }, {
+          "name": "tooltip",
+          "value": {},
+          "on": [
+            {"events": "rect:mouseover", "update": "datum"},
+            {"events": "rect:mouseout",  "update": "{}"}
+          ]
         }
     ],
 
@@ -181,13 +175,7 @@ object WebComponentsPage {
       "name": "table",
       "values": [
         {"category": "A", "amount": 28},
-        {"category": "B", "amount": 55},
-        {"category": "C", "amount": 43},
-        {"category": "D", "amount": 91},
-        {"category": "E", "amount": 81},
-        {"category": "F", "amount": 53},
-        {"category": "G", "amount": 19},
-        {"category": "H", "amount": 87}
+        {"category": "B", "amount": 55}
       ]
     }
   ],
@@ -241,6 +229,15 @@ object WebComponentsPage {
           "align": {"value": "center"},
           "baseline": {"value": "bottom"},
           "fill": {"value": "#333"}
+        },
+        "update": {
+          "x": {"scale": "xscale", "signal": "tooltip.category", "band": 0.5},
+          "y": {"scale": "yscale", "signal": "tooltip.amount", "offset": -2},
+          "text": {"signal": "tooltip.amount"},
+          "fillOpacity": [
+            {"test": "datum === tooltip", "value": 0},
+            {"value": 1}
+          ]
         }
       }
     }
