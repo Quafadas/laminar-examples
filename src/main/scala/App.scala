@@ -4,6 +4,7 @@ import oldstuff.pseudotests.SvgContainer
 import todomvc.TodoMvcApp
 import org.scalajs.dom.document
 import webcomponents.WebComponentsPage
+import todomvc.ToDashMvcApp
 
 object App {
 
@@ -40,10 +41,12 @@ object App {
 
   sealed abstract class Example(val caption: String, val init: () => HtmlElement)
 
-  case object TodoMVCExample extends Example("TodoMVC", TodoMvcApp.render)
-  case object WebComponentsExample extends Example("Web Components", WebComponentsPage.apply)
-  case object SvgContainerExample extends Example("SVG Container", SvgContainer.apply)
-  case object DuckCounterExample extends Example("Duck Counter", DuckMaster.app)
+//  case object TodoMVCExample extends Example("TodoMVC", TodoMvcApp.render)
+  case object ToDashMVCExample extends Example("To Dash MVC", ToDashMvcApp.render)
+ // case object WebComponentsExample extends Example("Web Components", WebComponentsPage.apply)
+  //case object SvgContainerExample extends Example("SVG Container", SvgContainer.apply)
+//  case object DuckCounterExample extends Example("Duck Counter", DuckMaster.app)
 
-  val examples: List[Example] = TodoMVCExample :: WebComponentsExample :: SvgContainerExample :: DuckCounterExample :: Nil
+  // examples: List[Example] = TodoMVCExample :: WebComponentsExample :: ToDashMVCExample :: SvgContainerExample :: DuckCounterExample :: Nil
+  val examples: List[Example] = ToDashMVCExample :: Nil
 }

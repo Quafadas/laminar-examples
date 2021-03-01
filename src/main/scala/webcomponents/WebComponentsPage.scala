@@ -116,7 +116,7 @@ object WebComponentsPage {
         p("The below bar chart is linked up to the slider... return the value on the right, and a random stream on the left"),           
         div(              
           cls := vizDivClass,
-          updateVizStream.signal --> ( {case((value, view), random) => {                      
+          updateVizStream.signal --> ( {case(value, view, random) => {                      
                   val data = JSON.parse(s"""[
                     {"category": "A", "amount": ${value*100}}, 
                     {"category": "B", "amount": ${value*50*random}}

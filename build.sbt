@@ -14,7 +14,7 @@ scalaVersion := "2.13.4"
 
 crossScalaVersions := Seq("2.12.10", "2.13.4")
 
-libraryDependencies += "com.raquo" %%% "laminar" % "0.11.0"
+libraryDependencies += "com.raquo" %%% "laminar" % "0.12.0"
 
 npmDependencies in Compile += "@material/mwc-button" -> "0.18.0"
 
@@ -30,6 +30,6 @@ npmDependencies in Compile += "vega-view" -> "5.9.2"
 
 scalaJSUseMainModuleInitializer := true
 
-scalaJSLinkerConfig in (Compile, fastOptJS) ~= { _.withSourceMap(false) }
+scalaJSLinkerConfig in (Compile, fastOptJS) ~= { _.withSourceMap(true) }
 
 useYarn := true

@@ -3,16 +3,49 @@
  * This is overkill, but I don't care how CSS is done for this example.
  */
 
+ div#viz {  
+  justify-items: center;
+  display: grid;
+
+  grid-template-columns: 10vw 19vw 19vw 2vw 19vw 19vw 10vw;
+  grid-template-rows: auto auto auto;
+
+  grid-auto-rows: min-content;
+
+  width: 98vw;
+  height:98vh;  
+  padding-left: 1vw;
+  padding-right: 1vw;
+  padding-top: 1vh;
+  padding-bottom: 1vh;
+}
+
+ div#vizCloud {
+  width: min(25vw, 25vh);
+  height: min(25vw, 25vh);  /* vw here is intentional. Want a square */
+  grid-row: 2;
+  grid-column: 2 / span 2;
+
+}	
+
+div#vizPie {
+  width: min(25vw, 25vh);
+  height: min(25vw, 25vh); /* vw here is intentional. Want a square */
+  grid-row: 2;
+  grid-column: 5 / span 2;
+}	
+
+div#app-container {
+  width: 100vw;
+  height: 100vh;
+}
+
 html,
 body {
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
-
-div#viz {
-  width: 30vw;
-  height:30vh;  
-}	
 
 div#viz2 {
   width: 30vw;
@@ -40,12 +73,10 @@ body {
   line-height: 1.4em;
   background: #f5f5f5;
   color: #4d4d4d;
-  min-width: 230px;
-  max-width: 750px;
   margin: 0 auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-weight: 300;
+  font-weight: 300;  
 }
 
 :focus {
@@ -58,10 +89,14 @@ body {
 
 .todoapp {
   background: #fff;
-  margin: 130px 0 40px 0;
+  margin: 130px 0 10px 0;
   position: relative;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2),
   0 25px 50px 0 rgba(0, 0, 0, 0.1);
+  width: 100%;  
+  grid-column-start: 2;
+  grid-column-end: 7;
+  grid-row: 1;
 }
 
 .todoapp input::-webkit-input-placeholder {
@@ -83,8 +118,7 @@ body {
 }
 
 .todoapp h1 {
-  position: absolute;
-  top: -155px;
+  position: relative;  
   width: 100%;
   font-size: 100px;
   font-weight: 100;

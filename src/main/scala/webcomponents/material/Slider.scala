@@ -44,7 +44,7 @@ object Slider {
   object styles {
     import com.raquo.domtypes.generic.keys.Style // Laminar aliases ReactiveStyle as Style, but we want the original underlying type here
 
-    val mdcThemeSecondary = new ReactiveStyle(new Style("--mdc-theme-secondary", "--mdc-theme-secondary"))
+    val mdcThemeSecondary = customStyle("--mdc-theme-secondary")
   }
 
   def apply(mods: ModFunction*): HtmlElement = {
